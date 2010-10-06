@@ -81,19 +81,18 @@ class ssh::server inherits ssh::client {
 	debug("User requested ssh on $fqdn with port '${ssh_port}'" )
 	notice("Configuring ssh on $fqdn with port '${real_ssh_port}'" )
 
-	config{ "Port": ensure => $real_ssh_port }
+	config{ "Port": value => $real_ssh_port }
 
 	nagios::service{ "ssh_port_${real_ssh_port}": check_command => "ssh_port!$real_ssh_port" }
 
 }
 
-define ssh::server::config($ensure) {
-	replace {
+define ssh::server::config($value) {
+	augeas {
 		"sshd_config_$name":
-			file => "/etc/ssh/sshd_config",
-			pattern => "^$name +(?!\\Q$ensure\\E).*",
-			replacement => "$name $ensure",
-			notify => Service[ssh],
+		context =>  "/files/etc/ssh/sshd_config",
+		changes =>  "set $name $value",
+		onlyif  =>  "get $name != $value",
+		# onlyif  =>  "match $name/*[.='$value'] size == 0",
 	}
 }
-
