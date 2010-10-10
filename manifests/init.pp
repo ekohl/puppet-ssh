@@ -76,14 +76,13 @@ class ssh::server inherits ssh::client {
 		}
 	}
 
-	$real_ssh_port = $ssh_port ? { '' => 22, default => $ssh_port }
+	$ssh_port = $ssh_port ? { '' => 22, default => $ssh_port }
+	$ssh_permit_root_login = $ssh_permit_root_login ? {'' => no, default => $ssh_permit_root_login}
 
-	debug("User requested ssh on $fqdn with port '${ssh_port}'" )
-	notice("Configuring ssh on $fqdn with port '${real_ssh_port}'" )
+	config{ "Port": value => $ssh_port }
+	config{ "PermitRootLogin": value => $ssh_permit_root_login}
 
-	config{ "Port": value => $real_ssh_port }
-
-	nagios::service{ "ssh_port_${real_ssh_port}": check_command => "ssh_port!$real_ssh_port" }
+	nagios::service{ "ssh_port_${ssh_port}": check_command => "ssh_port!$ssh_port" }
 
 }
 
