@@ -3,6 +3,14 @@
 # See LICENSE for the full license granted to you.
 # Adapted by Alexander Werner <alex@documentfoundation.org>
 
+class ssh::client::params {
+  $packagename = $operatingsystem ? {
+    /debian|ubuntu/ => "openssh-client",
+    /CentOS|rhel/   => "openssh-clients",
+    default         => "openssh",
+  }
+}
+
 class ssh::common {
   file {
     "/etc/ssh":
@@ -12,8 +20,11 @@ class ssh::common {
 }
 
 class ssh::client inherits ssh::common {
+  require ssh::client::params
+
   package {
     "openssh-client":
+      name => "${ssh::client::params::packagename}",
       ensure => installed,
       require => File["/etc/ssh"],
   }
