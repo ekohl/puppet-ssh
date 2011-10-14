@@ -73,9 +73,11 @@ class ssh::server inherits ssh::client {
 
   config{ "Port": value => $ssh_port }
   config{ "PermitRootLogin": value => $ssh_permit_root_login}
+}
 
+class ssh::nagios {
+  $ssh_port = $ssh_port ? { '' => 22, default => $ssh_port }
   nagios::service{ "ssh_port_${ssh_port}": check_command => "ssh_port!$ssh_port" }
-
 }
 
 define ssh::server::config($value) {
